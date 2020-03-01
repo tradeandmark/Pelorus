@@ -1,0 +1,50 @@
+{
+  "name": "Pelorus",
+  "version": "0.1.0",
+  "description": "A Compass schedule and class viewer app with to-do",
+  "main": "public/electron.js",
+  "scripts": {
+    "app-dev": "concurrently -s \"first\" -k \"react-scripts start\" \"wait-on -l http://localhost:3000 && electron .\"",
+    "electron-start": "electron .",
+    "react-start": "react-scripts start",
+    "react-build": "react-scripts build",
+    "react-eject": "react-scripts eject",
+    "electron-pack": "electron-builder --dir",
+    "electron-dist": "electron-builder"
+  },
+  "license": "UNLICENSED",
+  "repository": "https://gitlab.com/tradeandmark/Pelorus",
+  "dependencies": {
+    "@types/react": "^16.9.23",
+    "@types/react-dom": "^16.9.5",
+    "@uifabric/fluent-theme": "^0.16.7",
+    "electron-is-dev": "^1.1.0",
+    "electron-window-state": "^5.0.3",
+    "office-ui-fabric-react": "^7.95.0",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
+    "react-scripts": "3.4.0"
+  },
+  "devDependencies": {
+    "concurrently": "^5.1.0",
+    "electron": "^8.0.1",
+    "electron-builder": "^22.3.2",
+    "wait-on": "^4.0.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "homepage": "./",
+  "prettier": {
+    "printWidth": 999
+  }
+}
