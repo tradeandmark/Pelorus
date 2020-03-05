@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.1]
+
+Finally added a readme and license (MIT).
+
+### Added
+
+- `README.md`
+- `LICENSE`
+
+### Changed
+
+- `package.json` to reflect license change
+
 ## [0.1.0]
 
 Added everything. Files come from my electron app template merged with create-react-app. Also improved, fixed and added lot's of stuff.
