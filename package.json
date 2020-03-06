@@ -4,32 +4,37 @@
   "description": "A Compass schedule and class viewer app with to-do",
   "main": "public/electron.js",
   "scripts": {
-    "app-dev": "concurrently -s \"first\" -k \"react-scripts start\" \"wait-on -l http://localhost:3000 && electron .\"",
-    "electron-start": "electron .",
-    "react-start": "react-scripts start",
-    "react-build": "react-scripts build",
-    "react-eject": "react-scripts eject",
-    "electron-pack": "electron-builder --dir",
-    "electron-dist": "electron-builder"
+    "start": "nps -s",
+    "build": "nps build -l warn",
+    "electron:start": "nps electron.start",
+    "electron:pack": "nps electron.pack",
+    "electron:dist": "nps electron.dist",
+    "react:start": "nps react.start",
+    "react:build": "nps react.build"
   },
   "license": "MIT",
   "repository": "https://gitlab.com/tradeandmark/Pelorus",
   "dependencies": {
-    "@types/react": "^16.9.23",
-    "@types/react-dom": "^16.9.5",
-    "@uifabric/fluent-theme": "^0.16.7",
-    "electron-is-dev": "^1.1.0",
+    "@uifabric/fluent-theme": "^7.1.31",
+    "clean-stack": "^2.2.0",
+    "electron-store": "^5.1.1",
     "electron-window-state": "^5.0.3",
-    "office-ui-fabric-react": "^7.95.0",
-    "react": "^16.12.0",
-    "react-dom": "^16.12.0",
+    "nps": "^5.9.12",
+    "office-ui-fabric-react": "^7.98.3",
+    "react": "^16.13.0",
+    "react-dom": "^16.13.0",
     "react-scripts": "3.4.0"
   },
   "devDependencies": {
     "concurrently": "^5.1.0",
-    "electron": "^8.0.1",
-    "electron-builder": "^22.3.2",
-    "wait-on": "^4.0.0"
+    "electron": "^8.0.3",
+    "electron-builder": "^22.3.6",
+    "wait-on": "^4.0.1"
+  },
+  "build": {
+    "directories": {
+      "output": "build/electron"
+    }
   },
   "browserslist": {
     "production": [
