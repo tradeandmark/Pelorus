@@ -1,87 +1,93 @@
 const { app, BrowserWindow, Tray, Menu, shell } = require("electron");
 const path = require("path");
-isDev = require("electron-is-dev");
+const fs = require("fs");
 
-app.whenReady().then(() => {
-  const { width, height, x, y } = (windowStateKeeper = require("electron-window-state")({
-    defaultWidth: 800,
-    defaultHeight: 600
-  }));
+let win = null;
 
-  win = new BrowserWindow({
-    x: x,
-    y: y,
-    width: width,
-    height: height,
-    frame: false,
-    backgroundColor: "#222",
-    webPreferences: { nodeIntegration: true }
+if (!app.requestSingleInstanceLock()) {
+  app.quit();
+} else {
+  app.on("second-instance", (event, commandLine, workingDirectory) => {
+    if (win) {
+      if (win.isMinimized()) win.restore();
+      win.focus();
+    }
   });
 
-  win.loadURL(isDev ? "http://localhost:3000" : "file://" + path.join(`file://${path.join(__dirname, "../build/index.html")}`));
+  app.whenReady().then(() => {
+    const isDev = !app.isPackaged;
 
-  windowStateKeeper.manage(win);
+    console.log("Launching window");
+    const { width, height, x, y } = (windowStateKeeper = require("electron-window-state")({
+      defaultWidth: 800,
+      defaultHeight: 600
+    }));
 
-  win.webContents.on("will-navigate", (event, url) => {
-    function domain(url) {
-      var match = url.match(/(?:\/\/([^\/?#]*))/i);
-      return match == null ? "" : match[1];
+    win = new BrowserWindow({
+      x: x,
+      y: y,
+      width: width,
+      height: height,
+      frame: false,
+      backgroundColor: "#FFF",
+      webPreferences: { nodeIntegration: true }
+    });
+
+    if (isDev) {
+      win.loadURL("http://localhost:3000");
+      console.log("Loading URL: http://localhost:3000");
+    } else {
+      win.loadFile("build/index.html");
+      console.log("Loading file: build/index.html");
     }
-    event.preventDefault();
-    if (domain(win.webContents.getURL()) != domain(url)) {
+
+    contents = win.webContents;
+
+    windowStateKeeper.manage(win);
+
+    contents.on("did-fail-load", (event, errorCode, errorDescription, validatedURL) => {
+      console.error(`Could not load URL ${validatedURL}: ${errorCode} ${errorDescription}`);
+    });
+
+    contents.on("did-finish-load", () => {
+      console.log("Finished loading");
+    });
+
+    contents.on("will-navigate", (event, url) => {
+      function domain(url) {
+        var match = url.match(/(?:\/\/([^\/?#]*))/i);
+        return !!match ? match[1] : "";
+      }
+      if (domain(contents.getURL()) != domain(url)) {
+        console.log("Opening url in external browser:", url);
+        event.preventDefault();
+        shell.openExternal(url);
+      } else {
+        console.log("Loading url:", url);
+        console.log("Waiting for dom ready");
+      }
+    });
+
+    contents.on("new-window", (event, url) => {
       event.preventDefault();
       shell.openExternal(url);
-    }
-  });
+    });
 
-  win.webContents.on("new-window", (event, url) => {
-    event.preventDefault();
-    shell.openExternal(url);
-  });
-
-  var appIcon = new Tray(path.join(__dirname, "/icon.png"));
-
-  var contextMenu = Menu.buildFromTemplate([
-    {
-      label: "Show App",
-      click: function() {
-        win.show();
-      }
-    },
-    {
-      label: "Quit",
-      click: function() {
-        app.isQuiting = true;
-        app.quit();
-      }
-    }
-  ]);
-
-  appIcon.setContextMenu(contextMenu);
-
-  appIcon.on("click", () => {
-    win.show();
-  });
-
-  win.on("minimize", function(event) {
-    win.hide();
-  });
-
-  win.webContents.on("dom-ready", () => {
-    win.webContents
-      .executeJavaScript(
-        "(" +
-          (() => {
+    console.log("Waiting for dom ready");
+    contents.on("dom-ready", () => {
+      console.log("Injecting CSS, HTML and JavaScript");
+      contents.insertCSS(fs.readFileSync(isDev ? "public/electron.css" : "resources/app.asar/build/electron.css").toString());
+      contents.executeJavaScript(`document.body.insertAdjacentHTML("afterBegin", \`${fs.readFileSync(isDev ? "public/electron.html" : "resources/app.asar/build/electron.html").toString()}\`)`);
+      contents
+        .executeJavaScript(
+          `(${() => {
             try {
-              const remote = require("electron").remote;
+              global.win = require("electron").remote.getCurrentWindow();
 
-              var win = remote.getCurrentWindow();
-
+              document.getElementById("titlebar-text").innerHTML = document.title;
               win.on("page-title-updated", (event, title) => {
                 document.getElementById("titlebar-text").innerHTML = title;
               });
-
-              document.getElementById("titlebar-text").innerHTML = document.title;
 
               document.getElementById("titlebar-buttons-minimize").addEventListener("click", event => {
                 win.minimize();
@@ -92,65 +98,49 @@ app.whenReady().then(() => {
               });
 
               document.getElementById("titlebar-buttons-restore").addEventListener("click", event => {
-                if (win.isFullScreen()) {
-                  win.setFullScreen(false);
-                } else {
-                  win.unmaximize();
-                }
+                win.isFullScreen() ? win.setFullScreen(false) : win.unmaximize();
               });
 
               document.getElementById("titlebar-buttons-close").addEventListener("click", event => {
                 win.close();
               });
 
+              function toggleMaximized() {
+                win.isMaximized() ? document.body.classList.add("maximized") : document.body.classList.remove("maximized");
+              }
               toggleMaximized();
               win.on("maximize", toggleMaximized);
               win.on("unmaximize", toggleMaximized);
 
-              function toggleMaximized() {
-                if (win.isMaximized()) {
-                  document.body.classList.add("maximized");
-                } else {
-                  document.body.classList.remove("maximized");
-                }
+              function toggleBlurred() {
+                win.isFocused() ? document.body.classList.remove("blurred") : document.body.classList.add("blurred");
               }
-
               toggleBlurred();
               win.on("blur", toggleBlurred);
               win.on("focus", toggleBlurred);
 
-              function toggleBlurred() {
-                if (win.isFocused()) {
-                  document.body.classList.remove("blurred");
-                } else {
-                  document.body.classList.add("blurred");
-                }
+              function toggleFullScreen() {
+                win.isFullScreen() ? document.body.classList.add("full-screen") : document.body.classList.remove("full-screen");
               }
-
               toggleFullScreen();
               win.on("enter-full-screen", toggleFullScreen);
               win.on("leave-full-screen", toggleFullScreen);
 
-              function toggleFullScreen() {
-                if (win.isFullScreen()) {
-                  document.body.classList.add("full-screen");
-                } else {
-                  document.body.classList.remove("full-screen");
-                }
-              }
+              window.addEventListener("beforeunload", function(event) {
+                win.removeAllListeners();
+              });
             } catch (error) {
               return error;
             }
-          }).toString() +
-          ")()"
-      )
-      .then(result => {
-        if (result) {
-          if (result instanceof Error) {
-            console.error(result);
-            app.quit();
+          }})()`
+        )
+        .then(result => {
+          if (result) {
+            if (result instanceof Error) {
+              console.error(`Error in web contents: ${result}`);
+            }
           }
-        }
-      });
+        });
+    });
   });
-});
+}

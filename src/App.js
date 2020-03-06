@@ -11,7 +11,7 @@ function App() {
       verticalFill
       styles={{
         root: {
-          width: "960px",
+          width: "400px",
           margin: "0 auto",
           textAlign: "center",
           color: "#605e5c"
@@ -19,7 +19,6 @@ function App() {
       }}
       gap={15}
     >
-      <img src="https://raw.githubusercontent.com/Microsoft/just/master/packages/just-stack-uifabric/template/src/components/fabric.png" alt="logo" />
       <Text variant="xxLarge" styles={boldStyle}>
         Welcome to Your UI Fabric App
       </Text>
