@@ -89,19 +89,19 @@ if (!app.requestSingleInstanceLock()) {
                 document.getElementById("titlebar-text").innerHTML = title;
               });
 
-              document.getElementById("titlebar-buttons-minimize").addEventListener("click", event => {
+              document.getElementById("titlebar-button-minimize").addEventListener("click", event => {
                 win.minimize();
               });
 
-              document.getElementById("titlebar-buttons-maximize").addEventListener("click", event => {
+              document.getElementById("titlebar-button-maximize").addEventListener("click", event => {
                 win.maximize();
               });
 
-              document.getElementById("titlebar-buttons-restore").addEventListener("click", event => {
+              document.getElementById("titlebar-button-restore").addEventListener("click", event => {
                 win.isFullScreen() ? win.setFullScreen(false) : win.unmaximize();
               });
 
-              document.getElementById("titlebar-buttons-close").addEventListener("click", event => {
+              document.getElementById("titlebar-button-close").addEventListener("click", event => {
                 win.close();
               });
 
@@ -126,7 +126,7 @@ if (!app.requestSingleInstanceLock()) {
               win.on("enter-full-screen", toggleFullScreen);
               win.on("leave-full-screen", toggleFullScreen);
 
-              window.addEventListener("beforeunload", function(event) {
+              window.addEventListener("beforeunload", function() {
                 win.removeAllListeners();
               });
             } catch (error) {
