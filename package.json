@@ -1,14 +1,13 @@
 {
-  "name": "Pelorus",
+  "name": "pelorus",
   "version": "0.1.0",
   "description": "A Compass schedule and class viewer app with to-do",
   "main": "public/electron.js",
   "scripts": {
     "start": "nps -s",
-    "build": "nps build -l warn",
+    "build": "nps build",
     "electron:start": "nps electron.start",
-    "electron:pack": "nps electron.pack",
-    "electron:dist": "nps electron.dist",
+    "electron:dist": "nps electron.build",
     "react:start": "nps react.start",
     "react:build": "nps react.build"
   },
@@ -16,8 +15,8 @@
   "repository": "https://gitlab.com/tradeandmark/Pelorus",
   "dependencies": {
     "@uifabric/fluent-theme": "^7.1.31",
-    "clean-stack": "^2.2.0",
-    "electron-store": "^5.1.1",
+    "electron-json-storage": "^4.1.8",
+    "electron-unhandled": "^3.0.2",
     "electron-window-state": "^5.0.3",
     "nps": "^5.9.12",
     "office-ui-fabric-react": "^7.98.3",
@@ -48,8 +47,5 @@
       "last 1 safari version"
     ]
   },
-  "homepage": "./",
-  "prettier": {
-    "printWidth": 999
-  }
+  "homepage": "./"
 }
