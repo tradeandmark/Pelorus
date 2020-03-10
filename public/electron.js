@@ -108,74 +108,70 @@ if (!app.requestSingleInstanceLock()) {
       contents
         .executeJavaScript(
           `(${() => {
-            try {
-              global.win = require("electron").remote.getCurrentWindow();
+            require("electron-unhandled")();
+            global.win = require("electron").remote.getCurrentWindow();
 
-              document.getElementById("titlebar-text").innerHTML =
-                document.title;
-              win.on("page-title-updated", (event, title) => {
-                document.getElementById("titlebar-text").innerHTML = title;
+            document.getElementById("titlebar-text").innerHTML = document.title;
+            win.on("page-title-updated", (event, title) => {
+              document.getElementById("titlebar-text").innerHTML = title;
+            });
+
+            document
+              .getElementById("titlebar-button-minimize")
+              .addEventListener("click", event => {
+                win.minimize();
               });
 
-              document
-                .getElementById("titlebar-button-minimize")
-                .addEventListener("click", event => {
-                  win.minimize();
-                });
+            document
+              .getElementById("titlebar-button-maximize")
+              .addEventListener("click", event => {
+                win.maximize();
+              });
 
-              document
-                .getElementById("titlebar-button-maximize")
-                .addEventListener("click", event => {
-                  win.maximize();
-                });
-
-              document
-                .getElementById("titlebar-button-restore")
-                .addEventListener("click", event => {
-                  win.isFullScreen()
-                    ? win.setFullScreen(false)
-                    : win.unmaximize();
-                });
-
-              document
-                .getElementById("titlebar-button-close")
-                .addEventListener("click", event => {
-                  win.close();
-                });
-
-              function toggleMaximized() {
-                win.isMaximized()
-                  ? document.body.classList.add("maximized")
-                  : document.body.classList.remove("maximized");
-              }
-              toggleMaximized();
-              win.on("maximize", toggleMaximized);
-              win.on("unmaximize", toggleMaximized);
-
-              function toggleBlurred() {
-                win.isFocused()
-                  ? document.body.classList.remove("blurred")
-                  : document.body.classList.add("blurred");
-              }
-              toggleBlurred();
-              win.on("blur", toggleBlurred);
-              win.on("focus", toggleBlurred);
-
-              function toggleFullScreen() {
+            document
+              .getElementById("titlebar-button-restore")
+              .addEventListener("click", event => {
                 win.isFullScreen()
-                  ? document.body.classList.add("full-screen")
-                  : document.body.classList.remove("full-screen");
-              }
-              toggleFullScreen();
-              win.on("enter-full-screen", toggleFullScreen);
-              win.on("leave-full-screen", toggleFullScreen);
-
-              window.addEventListener("beforeunload", function() {
-                win.removeAllListeners();
+                  ? win.setFullScreen(false)
+                  : win.unmaximize();
               });
-            } catch (error) {
-              return error;
+
+            document
+              .getElementById("titlebar-button-close")
+              .addEventListener("click", event => {
+                win.close();
+              });
+
+            function toggleMaximized() {
+              win.isMaximized()
+                ? document.body.classList.add("maximized")
+                : document.body.classList.remove("maximized");
             }
+            toggleMaximized();
+            win.on("maximize", toggleMaximized);
+            win.on("unmaximize", toggleMaximized);
+
+            function toggleBlurred() {
+              win.isFocused()
+                ? document.body.classList.remove("blurred")
+                : document.body.classList.add("blurred");
+            }
+            toggleBlurred();
+            win.on("blur", toggleBlurred);
+            win.on("focus", toggleBlurred);
+
+            function toggleFullScreen() {
+              win.isFullScreen()
+                ? document.body.classList.add("full-screen")
+                : document.body.classList.remove("full-screen");
+            }
+            toggleFullScreen();
+            win.on("enter-full-screen", toggleFullScreen);
+            win.on("leave-full-screen", toggleFullScreen);
+
+            window.addEventListener("beforeunload", function() {
+              win.removeAllListeners();
+            });
           }})()`
         )
         .then(result => {
