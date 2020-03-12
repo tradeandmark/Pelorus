@@ -17,7 +17,7 @@ ReactDOM.render(
 
 mergeStyles({
   selectors: {
-    ":global(body), :global(html), :global(#root)": {
+    ":global(#root)": {
       margin: 0,
       padding: 0,
       height: "100vh"
