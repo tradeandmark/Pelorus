@@ -1,13 +1,16 @@
 const { app, BrowserWindow, Tray, Menu, shell } = require("electron");
 const path = require("path");
 const fs = require("fs");
-require("electron-unhandled")();
+const ewc = require("ewc");
+const unhandled = require("electron-unhandled");
+unhandled();
 
 const isDev = !app.isPackaged;
 
 let win = null;
 
 if (!app.requestSingleInstanceLock()) {
+  console.log("Already instance running, quitting");
   app.quit();
 } else {
   app.on("second-instance", (event, commandLine, workingDirectory) => {
@@ -35,26 +38,25 @@ if (!app.requestSingleInstanceLock()) {
       width: width,
       height: height,
       frame: false,
-      backgroundColor: "#FFF",
+      backgroundColor: "#00000000",
+      show: false,
       webPreferences: { nodeIntegration: true }
     });
 
-    if (isDev) {
-      win.loadURL("http://localhost:3000");
-      console.log("Loading URL: http://localhost:3000");
-    } else {
-      win.loadFile("build/index.html");
-      console.log("Loading file: build/index.html");
-    }
+    ewc.setAcrylic(win, 0xdd000000);
 
     contents = win.webContents;
 
     windowStateKeeper.manage(win);
 
+    win.on("ready-to-show", () => {
+      win.show();
+    });
+
     contents.on(
       "did-fail-load",
       (event, errorCode, errorDescription, validatedURL) => {
-        console.error(
+        throw new Error(
           `Could not load URL ${validatedURL}: ${errorCode} ${errorDescription}`
         );
       }
@@ -65,17 +67,12 @@ if (!app.requestSingleInstanceLock()) {
     });
 
     contents.on("will-navigate", (event, url) => {
-      function domain(url) {
-        var match = url.match(/(?:\/\/([^\/?#]*))/i);
-        return !!match ? match[1] : "";
-      }
-      if (domain(contents.getURL()) != domain(url)) {
+      if (new URL(contents.getURL()).origin != new URL(url).origin) {
         console.log("Opening url in external browser:", url);
         event.preventDefault();
         shell.openExternal(url);
       } else {
-        console.log("Loading url:", url);
-        console.log("Waiting for dom ready");
+        console.log("Loading URL:", url);
       }
     });
 
@@ -84,32 +81,21 @@ if (!app.requestSingleInstanceLock()) {
       shell.openExternal(url);
     });
 
-    contents.executeJavaScript(
-      `document.body.insertAdjacentHTML("afterBegin", \`${fs
-        .readFileSync(
-          isDev
-            ? "public/electron.html"
-            : "resources/app.asar/build/electron.html"
-        )
-        .toString()}\`)`
-    );
-    console.log("Waiting for dom ready");
-    contents.on("dom-ready", () => {
-      console.log("Injecting CSS, HTML and JavaScript");
-      contents.insertCSS(
-        fs
-          .readFileSync(
-            isDev
-              ? "public/electron.css"
-              : "resources/app.asar/build/electron.css"
-          )
-          .toString()
-      );
+    contents.on("did-start-loading", () => {
       contents
         .executeJavaScript(
-          `(${() => {
-            require("electron-unhandled")();
+          `(${(cssString, htmlString) => {
+            const unhandled = require("electron-unhandled");
+            unhandled();
+
             global.win = require("electron").remote.getCurrentWindow();
+
+            var styleSheet = document.createElement("style");
+            styleSheet.type = "text/css";
+            styleSheet.innerText = cssString;
+            document.head.appendChild(styleSheet);
+
+            document.body.insertAdjacentHTML("afterBegin", htmlString);
 
             document.getElementById("titlebar-text").innerHTML = document.title;
             win.on("page-title-updated", (event, title) => {
@@ -172,15 +158,33 @@ if (!app.requestSingleInstanceLock()) {
             window.addEventListener("beforeunload", function() {
               win.removeAllListeners();
             });
-          }})()`
+          }})(\`${fs
+            .readFileSync(
+              isDev
+                ? "public/electron.css"
+                : "resources/app.asar/build/electron.css"
+            )
+            .toString()}\`, \`${fs
+            .readFileSync(
+              isDev
+                ? "public/electron.html"
+                : "resources/app.asar/build/electron.html"
+            )
+            .toString()}\`)`
         )
         .then(result => {
           if (result instanceof Error) {
             console.error(`Error in web contents: ${result}`);
-          } else {
-            console.log("Success");
           }
         });
     });
+
+    if (isDev) {
+      win.loadURL("http://localhost:3000/");
+      console.log("Loading URL: http://localhost:3000/");
+    } else {
+      win.loadFile("build/index.html");
+      console.log("Loading URL: build/index.html");
+    }
   });
 }
