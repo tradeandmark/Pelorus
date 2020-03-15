@@ -1,7 +1,8 @@
-const { app, BrowserWindow, Tray, Menu, shell } = require("electron");
+const { app, shell, BrowserWindow, Tray, Menu } = require("electron");
 const path = require("path");
 const fs = require("fs");
 const ewc = require("ewc");
+const storage = require("electron-json-storage");
 const unhandled = require("electron-unhandled");
 unhandled();
 
@@ -9,56 +10,76 @@ const isDev = !app.isPackaged;
 
 let win = null;
 
+function debounce(func, wait, immediate) {
+  var timeout;
+  return function() {
+    var context = this,
+      args = arguments;
+    var later = function() {
+      timeout = null;
+      if (!immediate) func.apply(context, args);
+    };
+    var callNow = immediate && !timeout;
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+    if (callNow) func.apply(context, args);
+  };
+}
+
 if (!app.requestSingleInstanceLock()) {
   console.log("Already instance running, quitting");
   app.quit();
 } else {
-  app.on("second-instance", (event, commandLine, workingDirectory) => {
+  app.on("second-instance", () => {
     if (win) {
       if (win.isMinimized()) win.restore();
+      if (win.isHidden()) win.show();
       win.focus();
     }
   });
 
   app.whenReady().then(() => {
-    console.log("Launching window");
-    const {
-      width,
-      height,
-      x,
-      y
-    } = (windowStateKeeper = require("electron-window-state")({
-      defaultWidth: 800,
-      defaultHeight: 600
-    }));
+    // console.log(process.versions.chrome);
+    // console.log(process.versions.electron);
 
-    win = new BrowserWindow({
-      x: x,
-      y: y,
-      width: width,
-      height: height,
+    console.log("Launching window");
+
+    const win = new BrowserWindow({
       frame: false,
-      backgroundColor: "#00000000",
-      show: false,
+      backgroundColor: "#0000",
       webPreferences: { nodeIntegration: true }
     });
 
-    ewc.setAcrylic(win, 0xdd000000);
+    if ((process.platform = "win32")) {
+      ewc.setAcrylic(win, 0xbb000000);
 
-    contents = win.webContents;
+      const set = debounce(() => {
+        ewc.setAcrylic(win, 0xbb000000);
+      }, 100);
 
-    windowStateKeeper.manage(win);
+      win.on("move", () => {
+        ewc.setBlurBehind(win, 0xdd222222);
+        set();
+      });
 
-    win.on("ready-to-show", () => {
-      win.show();
-    });
+      win.on("resize", () => {
+        ewc.setBlurBehind(win, 0xdd222222);
+        set();
+      });
+    }
+
+    const contents = win.webContents;
 
     contents.on(
       "did-fail-load",
       (event, errorCode, errorDescription, validatedURL) => {
-        throw new Error(
-          `Could not load URL ${validatedURL}: ${errorCode} ${errorDescription}`
-        );
+        if (validatedURL == "http://localhost:3000/") {
+          win.loadFile("build/index.html");
+        } else {
+          throw new Error(
+            `Could not load URL ${validatedURL}: ${errorCode} ${errorDescription}`
+          );
+        }
       }
     );
 
