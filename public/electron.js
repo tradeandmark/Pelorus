@@ -118,26 +118,28 @@ if (!app.requestSingleInstanceLock()) {
 
             document.body.insertAdjacentHTML("afterBegin", htmlString);
 
-            document.getElementById("titlebar-text").innerHTML = document.title;
-            win.on("page-title-updated", (event, title) => {
-              document.getElementById("titlebar-text").innerHTML = title;
-            });
+            function updateTitle() {
+              document.getElementById("titlebar-text").innerHTML =
+                document.title;
+            }
+            updateTitle();
+            win.on("page-title-updated", updateTitle);
 
             document
               .getElementById("titlebar-button-minimize")
-              .addEventListener("click", event => {
+              .addEventListener("click", () => {
                 win.minimize();
               });
 
             document
               .getElementById("titlebar-button-maximize")
-              .addEventListener("click", event => {
+              .addEventListener("click", () => {
                 win.maximize();
               });
 
             document
               .getElementById("titlebar-button-restore")
-              .addEventListener("click", event => {
+              .addEventListener("click", () => {
                 win.isFullScreen()
                   ? win.setFullScreen(false)
                   : win.unmaximize();
@@ -145,7 +147,7 @@ if (!app.requestSingleInstanceLock()) {
 
             document
               .getElementById("titlebar-button-close")
-              .addEventListener("click", event => {
+              .addEventListener("click", () => {
                 win.close();
               });
 
