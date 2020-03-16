@@ -176,8 +176,14 @@ if (!app.requestSingleInstanceLock()) {
             win.on("enter-full-screen", toggleFullScreen);
             win.on("leave-full-screen", toggleFullScreen);
 
-            window.addEventListener("beforeunload", function() {
-              win.removeAllListeners();
+            window.addEventListener("beforeunload", () => {
+              win.removeListener("page-title-updated", updateTitle);
+              win.removeListener("maximize", toggleMaximized);
+              win.removeListener("unmaximize", toggleMaximized);
+              win.removeListener("blur", toggleBlurred);
+              win.removeListener("focus", toggleBlurred);
+              win.removeListener("enter-full-screen", toggleFullScreen);
+              win.removeListener("leave-full-screen", toggleFullScreen);
             });
           }})(\`${fs
             .readFileSync(
