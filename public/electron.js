@@ -186,17 +186,9 @@ if (!app.requestSingleInstanceLock()) {
               win.removeListener("leave-full-screen", toggleFullScreen);
             });
           }})(\`${fs
-            .readFileSync(
-              isDev
-                ? "public/electron.css"
-                : "resources/app.asar/build/electron.css"
-            )
+            .readFileSync(path.join(__dirname, "/electron.css"))
             .toString()}\`, \`${fs
-            .readFileSync(
-              isDev
-                ? "public/electron.html"
-                : "resources/app.asar/build/electron.html"
-            )
+            .readFileSync(path.join(__dirname, "/electron.html"))
             .toString()}\`)`
         )
         .then(result => {
