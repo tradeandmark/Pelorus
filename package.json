@@ -3,6 +3,7 @@
   "productName": "Pelorus",
   "version": "0.1.0",
   "description": "A Compass schedule and class viewer app with to-do",
+  "author": "Toby56",
   "main": "public/electron.js",
   "scripts": {
     "start": "nps",
@@ -41,6 +42,7 @@
       "output": "build/electron"
     }
   },
+  "homepage": "./",
   "browserslist": {
     "production": [
       ">0.2%",
@@ -52,6 +54,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "homepage": "./"
+  }
 }
