@@ -8,8 +8,6 @@ unhandled();
 
 const isDev = !app.isPackaged;
 
-let win = null;
-
 function debounce(func, wait, immediate) {
   var timeout;
   return function() {
@@ -30,28 +28,21 @@ if (!app.requestSingleInstanceLock()) {
   console.log("Already instance running, quitting");
   app.quit();
 } else {
-  app.on("second-instance", () => {
-    if (win) {
-      if (win.isMinimized()) win.restore();
-      if (win.isHidden()) win.show();
-      win.focus();
-    }
-  });
-
   app.whenReady().then(() => {
-    // console.log(process.versions.chrome);
-    // console.log(process.versions.electron);
-
     console.log("Launching window");
 
-    const win = new BrowserWindow({
+    win = new BrowserWindow({
       frame: false,
       backgroundColor: "#0000",
       webPreferences: { nodeIntegration: true }
     });
 
-    if ((process.platform = "win32")) {
-      ewc.setAcrylic(win, 0xbb000000);
+    app.on("second-instance", () => {
+      console.log("Another instance tried to launch");
+      if (win.isMinimized()) win.restore();
+      if (win.isHidden()) win.show();
+      win.focus();
+    });
 
       const set = debounce(() => {
         ewc.setAcrylic(win, 0xbb000000);
@@ -82,10 +73,6 @@ if (!app.requestSingleInstanceLock()) {
         }
       }
     );
-
-    contents.on("did-finish-load", () => {
-      console.log("Finished loading");
-    });
 
     contents.on("will-navigate", (event, url) => {
       if (new URL(contents.getURL()).origin != new URL(url).origin) {
@@ -192,12 +179,7 @@ if (!app.requestSingleInstanceLock()) {
             .toString()}\`, \`${fs
             .readFileSync(path.join(__dirname, "/electron.html"))
             .toString()}\`)`
-        )
-        .then(result => {
-          if (result instanceof Error) {
-            console.error(`Error in web contents: ${result}`);
-          }
-        });
+      );
     });
 
     if (isDev) {
