@@ -101,95 +101,80 @@ if (!app.requestSingleInstanceLock()) {
     });
 
     contents.on("did-start-loading", () => {
-      contents
-        .executeJavaScript(
-          `(${(cssString, htmlString) => {
-            const unhandled = require("electron-unhandled");
-            unhandled();
+      contents.executeJavaScript(
+        `(${(cssString, htmlString) => {
+          const unhandled = require("electron-unhandled");
+          unhandled();
 
-            global.win = require("electron").remote.getCurrentWindow();
+          global.win = require("electron").remote.getCurrentWindow();
 
-            var styleSheet = document.createElement("style");
-            styleSheet.type = "text/css";
-            styleSheet.innerText = cssString;
-            document.head.appendChild(styleSheet);
+          var styleSheet = document.createElement("style");
+          styleSheet.type = "text/css";
+          styleSheet.innerText = cssString;
+          document.head.appendChild(styleSheet);
 
-            document.body.insertAdjacentHTML("afterBegin", htmlString);
+          document.body.insertAdjacentHTML("afterBegin", htmlString);
 
-            function updateTitle() {
+          events = {
+            "page-title-updated": () => {
               document.getElementById("titlebar-text").innerHTML =
                 document.title;
+            },
+            "maximize unmaximize": function toggleMaximized() {
+              document.body.classList[win.isMaximized() ? "add" : "remove"](
+                "maximized"
+              );
+            },
+            "blur focus": () => {
+              document.body.classList[win.isFocused() ? "remove" : "add"](
+                "blurred"
+              );
+            },
+            "enter-full-screen leave-full-screen": function toggleFullScreen() {
+              document.body.classList[win.isFullScreen() ? "add" : "remove"](
+                "full-screen"
+              );
             }
-            updateTitle();
-            win.on("page-title-updated", updateTitle);
+          };
 
-            document
-              .getElementById("titlebar-button-minimize")
-              .addEventListener("click", () => {
-                win.minimize();
+          for (const event in events) {
+            events[event]();
+            event.split(" ").forEach(event2 => {
+              win.on(event2, events[event]);
+              window.addEventListener("beforeunload", () => {
+                win.removeListener(event2, events[event]);
               });
-
-            document
-              .getElementById("titlebar-button-maximize")
-              .addEventListener("click", () => {
-                win.maximize();
-              });
-
-            document
-              .getElementById("titlebar-button-restore")
-              .addEventListener("click", () => {
-                win.isFullScreen()
-                  ? win.setFullScreen(false)
-                  : win.unmaximize();
-              });
-
-            document
-              .getElementById("titlebar-button-close")
-              .addEventListener("click", () => {
-                win.close();
-              });
-
-            function toggleMaximized() {
-              win.isMaximized()
-                ? document.body.classList.add("maximized")
-                : document.body.classList.remove("maximized");
-            }
-            toggleMaximized();
-            win.on("maximize", toggleMaximized);
-            win.on("unmaximize", toggleMaximized);
-
-            function toggleBlurred() {
-              win.isFocused()
-                ? document.body.classList.remove("blurred")
-                : document.body.classList.add("blurred");
-            }
-            toggleBlurred();
-            win.on("blur", toggleBlurred);
-            win.on("focus", toggleBlurred);
-
-            function toggleFullScreen() {
-              win.isFullScreen()
-                ? document.body.classList.add("full-screen")
-                : document.body.classList.remove("full-screen");
-            }
-            toggleFullScreen();
-            win.on("enter-full-screen", toggleFullScreen);
-            win.on("leave-full-screen", toggleFullScreen);
-
-            window.addEventListener("beforeunload", () => {
-              win.removeListener("page-title-updated", updateTitle);
-              win.removeListener("maximize", toggleMaximized);
-              win.removeListener("unmaximize", toggleMaximized);
-              win.removeListener("blur", toggleBlurred);
-              win.removeListener("focus", toggleBlurred);
-              win.removeListener("enter-full-screen", toggleFullScreen);
-              win.removeListener("leave-full-screen", toggleFullScreen);
             });
-          }})(\`${fs
-            .readFileSync(path.join(__dirname, "/electron.css"))
-            .toString()}\`, \`${fs
-            .readFileSync(path.join(__dirname, "/electron.html"))
-            .toString()}\`)`
+          }
+
+          document
+            .getElementById("titlebar-button-minimize")
+            .addEventListener("click", () => {
+              win.minimize();
+            });
+
+          document
+            .getElementById("titlebar-button-maximize")
+            .addEventListener("click", () => {
+              win.maximize();
+            });
+
+          document
+            .getElementById("titlebar-button-restore")
+            .addEventListener("click", () => {
+              win.isFullScreen() ? win.setFullScreen(false) : win.unmaximize();
+            });
+
+          document
+            .getElementById("titlebar-button-close")
+            .addEventListener("click", () => {
+              win.close();
+            });
+        }})(\`${fs
+          .readFileSync(path.join(__dirname, "/electron.css"))
+          .toString()}\`, \`${fs
+          .readFileSync(path.join(__dirname, "/electron.html"))
+          .toString()}\`)`
       );
     });
 
