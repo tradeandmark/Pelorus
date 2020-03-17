@@ -44,20 +44,31 @@ if (!app.requestSingleInstanceLock()) {
       win.focus();
     });
 
-      const set = debounce(() => {
-        ewc.setAcrylic(win, 0xbb000000);
-      }, 100);
+    // if ((process.platform = "win32")) {
+    //   const disableAcrylic = debounce(
+    //     () => {
+    //       ewc.setGradient(win, 0xff222222);
+    //     },
+    //     50,
+    //     true
+    //   );
 
-      win.on("move", () => {
-        ewc.setBlurBehind(win, 0xdd222222);
-        set();
-      });
+    //   const enableAcrylic = debounce(() => {
+    //     ewc.setAcrylic(win, 0xbb000000);
+    //   }, 50);
 
-      win.on("resize", () => {
-        ewc.setBlurBehind(win, 0xdd222222);
-        set();
-      });
-    }
+    //   enableAcrylic();
+
+    //   win.on("move", () => {
+    //     disableAcrylic();
+    //     enableAcrylic();
+    //   });
+
+    //   win.on("resize", () => {
+    //     disableAcrylic();
+    //     enableAcrylic();
+    //   });
+    // }
 
     const contents = win.webContents;
 
