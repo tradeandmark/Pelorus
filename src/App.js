@@ -11,9 +11,9 @@ function App() {
       verticalFill
       styles={{
         root: {
-          width: "400px",
+          width: "100vw",
+          height: "100vh",
           margin: "0 auto",
-          textAlign: "center",
           color: "#FFF"
         }
       }}
@@ -22,7 +22,7 @@ function App() {
       <Text variant="xxLarge" styles={boldStyle}>
         Hello World!
       </Text>
-      <Text variant="large">Welcome to your epic electron + react app!</Text>
+      {/* <Text variant="large">Welcome to your epic electron + react app!</Text> */}
     </Stack>
   );
 }

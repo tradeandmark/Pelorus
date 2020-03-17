@@ -5,12 +5,16 @@ body {
   box-sizing: border-box;
 }
 
-body.theme-light {
+body.theme-light:not(.transparent) {
   background-color: #fff;
 }
 
-body.theme-dark {
+body.theme-dark:not(.transparent) {
   background-color: #222;
+}
+
+body.transparent {
+  background-color: #0000;
 }
 
 /* #titlebar, #titlebar-text, #titlebar-drag */
