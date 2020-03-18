@@ -106,7 +106,7 @@ if (!app.requestSingleInstanceLock()) {
           const unhandled = require("electron-unhandled");
           unhandled();
 
-          global.win = require("electron").remote.getCurrentWindow();
+          var win = require("electron").remote.getCurrentWindow();
 
           var styleSheet = document.createElement("style");
           styleSheet.type = "text/css";
@@ -114,6 +114,44 @@ if (!app.requestSingleInstanceLock()) {
           document.head.appendChild(styleSheet);
 
           document.body.insertAdjacentHTML("afterBegin", htmlString);
+
+          {
+            const types = {
+              minimize: "min",
+              maximize: "max",
+              restore: "restore",
+              close: "close"
+            };
+            const colors = {
+              white: "w",
+              black: "k"
+            };
+            const sizes = {
+              "1": "10",
+              "1.25": "12",
+              "1.5": "15",
+              "1.75": "15",
+              "2": "20",
+              "2.25": "20",
+              "2.5": "24",
+              "3": "30",
+              "3.5": "30"
+            };
+
+            Object.keys(types).forEach(type => {
+              Object.keys(colors).forEach(color => {
+                let srcset = [];
+                Object.keys(sizes).forEach(size => {
+                  srcset.push(
+                    `icons/${types[type]}-${colors[color]}-${sizes[size]}.png ${size}x`
+                  );
+                });
+                document.querySelector(
+                  `#titlebar-button-${type} .icon-${color}`
+                ).srcset = srcset.join(", ");
+              });
+            });
+          }
 
           events = {
             "page-title-updated": () => {
@@ -139,10 +177,10 @@ if (!app.requestSingleInstanceLock()) {
 
           for (const event in events) {
             events[event]();
-            event.split(" ").forEach(event2 => {
-              win.on(event2, events[event]);
+            event.split(" ").forEach(eventSplit => {
+              win.on(eventSplit, events[event]);
               window.addEventListener("beforeunload", () => {
-                win.removeListener(event2, events[event]);
+                win.removeListener(eventSplit, events[event]);
               });
             });
           }
