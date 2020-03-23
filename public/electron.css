@@ -1,4 +1,5 @@
-/* body */
+/* BASIC STYLING (body, .theme-light, .theme-dark, .transparent) */
+
 body {
   height: 100vh;
   margin: 0;
@@ -17,13 +18,12 @@ body.transparent {
   background-color: #0000;
 }
 
-/* #titlebar, #titlebar-text, #titlebar-drag */
+/* THE TITLEBAR AND IT'S BASIC CONTENTS (#titlebar, #titlebar-text, #titlebar-drag) */
 
 #titlebar {
   position: fixed;
   height: 32px;
   width: 100%;
-  box-sizing: border-box;
   display: grid;
   grid-template-columns: auto 138px;
 }
@@ -31,27 +31,28 @@ body.transparent {
 #titlebar-text {
   position: relative;
   grid-column: 1;
-  display: flex;
-  align-items: center;
   font-family: "Segoe UI", sans-serif;
+  height: 100%;
+  padding-left: 12px;
   font-size: 12px;
   user-select: none;
-  height: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.5;
+  line-height: 32px;
   white-space: nowrap;
-  padding-left: 12px;
 }
 
+/* Make sure the text is light instead of dark when the theme is dark */
 .theme-dark #titlebar-text {
   color: white;
 }
 
+/* Dim the text when the window  loses focus */
 .blurred #titlebar-text {
   opacity: 0.5;
 }
 
+/* Make sure the drag region has space around it for the window resize handles */
 #titlebar-drag {
   position: absolute;
   top: 4px;
@@ -61,6 +62,8 @@ body.transparent {
   -webkit-app-region: drag;
 }
 
+/* Don't worry about adding extra space to the drag region */
+/* when the window is maximized or fullscreen */
 .maximized #titlebar-drag,
 .full-screen #titlebar-drag {
   top: 0;
@@ -68,7 +71,7 @@ body.transparent {
   right: 0;
 }
 
-/* #titlebar-buttons, .button, .icon, .icon-white, .icon-black */
+/* THE BUTTONS AND ICONS (#titlebar-buttons, .button, .icon, .icon-white, .icon-black) */
 
 #titlebar-buttons {
   display: grid;
@@ -88,14 +91,18 @@ body.transparent {
   cursor: default;
 }
 
+/* Dim the buttons when the window is blurred */
 .blurred #titlebar-buttons .button {
   opacity: 0.5;
 }
 
+/* Make sure a button isn't dimmed when it is hovered on */
 #titlebar-buttons .button:hover {
   opacity: 1;
 }
 
+/* Highlight the background of the buttons when they are hovered on or clicked, */
+/* dark background for light theme and light background for dark theme */
 .theme-light #titlebar-buttons .button:hover {
   background: rgba(0, 0, 0, 0.1);
 }
@@ -112,26 +119,12 @@ body.transparent {
   background: rgba(255, 255, 255, 0.2);
 }
 
+/* Make sure the icons can't be dragged */
 #titlebar-buttons .icon {
   -webkit-user-drag: none;
 }
 
-.theme-light #titlebar-button-close:hover:not(:active) .icon-white {
-  display: inline;
-}
-
-.theme-light #titlebar-button-close:hover:not(:active) .icon-black {
-  display: none;
-}
-
-.theme-dark #titlebar-button-close:active .icon-white {
-  display: none;
-}
-
-.theme-dark #titlebar-button-close:active .icon-black {
-  display: inline;
-}
-
+/* Make sure the right icon colors show up when the window is themed */
 .theme-dark #titlebar-buttons .icon-black {
   display: none;
 }
@@ -140,8 +133,11 @@ body.transparent {
   display: none;
 }
 
-/* #titlebar-button-minimize, #titlebar-button-maximize, #titlebar-button-restore, #titlebar-button-close */
+/* STYLING FOR EACH DIFFERNT ICON TYPE */
+/* (#titlebar-button-minimize, #titlebar-button-maximize, */
+/* #titlebar-button-restore, #titlebar-button-close) */
 
+/* Make sure the buttons go in the right places */
 #titlebar-button-minimize {
   grid-column: 1;
 }
@@ -155,12 +151,9 @@ body.transparent {
   grid-column: 3;
 }
 
+/* Make sure the maximize and restore buttons are only visible when we want them to be */
 #titlebar-button-restore {
   display: none !important;
-}
-
-#titlebar-button-maximize {
-  display: flex;
 }
 
 .full-screen #titlebar-button-restore,
@@ -173,11 +166,29 @@ body.transparent {
   display: none;
 }
 
+/* Red background for the close button when it is hovered on or clicked */
 #titlebar-button-close:hover {
   background: #e81123 !important;
 }
 
 #titlebar-button-close:active {
   background: #f1707a !important;
-  color: #000;
+}
+
+/* Make sure the close button's icon is the right color when it */
+/* is hovered or clicked and the theme is light or dark */
+.theme-dark #titlebar-button-close:active .icon-white {
+  display: none;
+}
+
+.theme-dark #titlebar-button-close:active .icon-black {
+  display: inline;
+}
+
+.theme-light #titlebar-button-close:hover:not(:active) .icon-white {
+  display: inline;
+}
+
+.theme-light #titlebar-button-close:hover:not(:active) .icon-black {
+  display: none;
 }
