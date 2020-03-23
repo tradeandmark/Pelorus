@@ -9,7 +9,6 @@
       "runtimeArgs": ["electron:debug"],
       "port": 2828,
       "skipFiles": ["<node_internals>/**"],
-      "timeout": 10000,
       "outputCapture": "std"
     },
     {
@@ -17,8 +16,7 @@
       "type": "chrome",
       "request": "attach",
       "port": 9222,
-      "webRoot": "${workspaceFolder}",
-      "timeout": 30000
+      "webRoot": "${workspaceFolder}"
     }
   ],
   "compounds": [
