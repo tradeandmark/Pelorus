@@ -1,10 +1,11 @@
+const unhandled = require("electron-unhandled");
+unhandled();
+
 const { app, shell, BrowserWindow, Tray, Menu } = require("electron");
 const path = require("path");
 const fs = require("fs");
 const ewc = require("ewc");
 const storage = require("electron-json-storage");
-const unhandled = require("electron-unhandled");
-unhandled();
 
 const isDev = !app.isPackaged;
 
@@ -24,6 +25,8 @@ function debounce(func, wait, immediate) {
   };
 }
 
+var win = null;
+
 if (!app.requestSingleInstanceLock()) {
   console.log("Already instance running, quitting");
   app.quit();
@@ -33,15 +36,31 @@ if (!app.requestSingleInstanceLock()) {
 
     win = new BrowserWindow({
       frame: false,
-      backgroundColor: "#0000",
+      backgroundColor: "#222",
       webPreferences: { nodeIntegration: true }
     });
 
     app.on("second-instance", () => {
       console.log("Another instance tried to launch");
+      if (!win.isVisible()) win.show();
       if (win.isMinimized()) win.restore();
-      if (win.isHidden()) win.show();
       win.focus();
+    });
+
+    win.on("closed", () => {
+      win = null;
+    });
+
+    app.on("window-all-closed", function() {
+      if (process.platform !== "darwin") {
+        app.quit();
+      }
+    });
+
+    app.on("activate", function() {
+      if (win === null) {
+        createWindow();
+      }
     });
 
     // if ((process.platform = "win32")) {
@@ -72,18 +91,13 @@ if (!app.requestSingleInstanceLock()) {
 
     const contents = win.webContents;
 
-    contents.on(
-      "did-fail-load",
-      (event, errorCode, errorDescription, validatedURL) => {
-        if (validatedURL == "http://localhost:3000/") {
-          win.loadFile("build/index.html");
-        } else {
-          throw new Error(
-            `Could not load URL ${validatedURL}: ${errorCode} ${errorDescription}`
-          );
-        }
+    contents.on("did-fail-load", (event, errorCode, errorDescription, validatedURL) => {
+      if (validatedURL == "http://localhost:3000/") {
+        win.loadFile("build/index.html");
+      } else {
+        throw new Error(`Could not load URL ${validatedURL}: ${errorCode} ${errorDescription}`);
       }
-    );
+    });
 
     contents.on("will-navigate", (event, url) => {
       if (new URL(contents.getURL()).origin != new URL(url).origin) {
@@ -102,18 +116,11 @@ if (!app.requestSingleInstanceLock()) {
 
     contents.on("did-start-loading", () => {
       contents.executeJavaScript(
-        `(${(cssString, htmlString) => {
+        `(${cssString => {
           const unhandled = require("electron-unhandled");
           unhandled();
 
           var win = require("electron").remote.getCurrentWindow();
-
-          var styleSheet = document.createElement("style");
-          styleSheet.type = "text/css";
-          styleSheet.innerText = cssString;
-          document.head.appendChild(styleSheet);
-
-          document.body.insertAdjacentHTML("afterBegin", htmlString);
 
           {
             const types = {
@@ -138,81 +145,64 @@ if (!app.requestSingleInstanceLock()) {
               "3.5": "30"
             };
 
-            Object.keys(types).forEach(type => {
-              Object.keys(colors).forEach(color => {
+            const actions = {
+              minimize: () => win.minimize(),
+              maximize: () => win.maximize(),
+              restore: () => (win.isFullScreen() ? win.setFullScreen(false) : win.unmaximize()),
+              close: () => win.close()
+            };
+
+            let buttons = "";
+            for (const type in types) {
+              let icons = "";
+              for (const color in colors) {
                 let srcset = [];
-                Object.keys(sizes).forEach(size => {
-                  srcset.push(
-                    `icons/${types[type]}-${colors[color]}-${sizes[size]}.png ${size}x`
-                  );
-                });
-                document.querySelector(
-                  `#titlebar-button-${type} .icon-${color}`
-                ).srcset = srcset.join(", ");
-              });
-            });
-          }
-
-          events = {
-            "page-title-updated": () => {
-              document.getElementById("titlebar-text").innerHTML =
-                document.title;
-            },
-            "maximize unmaximize": function toggleMaximized() {
-              document.body.classList[win.isMaximized() ? "add" : "remove"](
-                "maximized"
-              );
-            },
-            "blur focus": () => {
-              document.body.classList[win.isFocused() ? "remove" : "add"](
-                "blurred"
-              );
-            },
-            "enter-full-screen leave-full-screen": function toggleFullScreen() {
-              document.body.classList[win.isFullScreen() ? "add" : "remove"](
-                "full-screen"
-              );
+                for (const size in sizes) {
+                  srcset.push(`icons/${types[type]}-${colors[color]}-${sizes[size]}.png ${size}x`);
+                }
+                icons += `<img class="icon icon-${color}" srcset="${srcset + ""}" />`;
+              }
+              buttons += `<div class="button" id="titlebar-button-${type}">${icons}</div>`;
             }
-          };
 
-          for (const event in events) {
-            events[event]();
-            event.split(" ").forEach(eventSplit => {
-              win.on(eventSplit, events[event]);
-              window.addEventListener("beforeunload", () => {
-                win.removeListener(eventSplit, events[event]);
+            document.body.insertAdjacentHTML(
+              "afterbegin",
+              `<link rel="stylesheet" href="electron.css">
+              <div id="titlebar">
+                <div id="titlebar-drag"></div>
+                <div id="titlebar-text">${document.title}</div>
+                <div id="titlebar-buttons">${buttons}</div>
+              </div>`
+            );
+
+            for (const type in actions) {
+              document
+                .getElementById(`titlebar-button-${type}`)
+                .addEventListener("click", actions[type]);
+            }
+
+            let events = {
+              "page-title-updated": () =>
+                (document.getElementById("titlebar-text").innerHTML = document.title),
+              "maximize, unmaximize": () =>
+                document.body.classList[win.isMaximized() ? "add" : "remove"]("maximized"),
+              "blur, focus": () =>
+                document.body.classList[win.isFocused() ? "remove" : "add"]("blurred"),
+              "enter-full-screen, leave-full-screen": () =>
+                document.body.classList[win.isFullScreen() ? "add" : "remove"]("full-screen")
+            };
+
+            for (const event in events) {
+              events[event]();
+              event.split(", ").forEach(eventSplit => {
+                win.on(eventSplit, events[event]);
+                window.addEventListener("beforeunload", () => {
+                  win.removeListener(eventSplit, events[event]);
+                });
               });
-            });
+            }
           }
-
-          document
-            .getElementById("titlebar-button-minimize")
-            .addEventListener("click", () => {
-              win.minimize();
-            });
-
-          document
-            .getElementById("titlebar-button-maximize")
-            .addEventListener("click", () => {
-              win.maximize();
-            });
-
-          document
-            .getElementById("titlebar-button-restore")
-            .addEventListener("click", () => {
-              win.isFullScreen() ? win.setFullScreen(false) : win.unmaximize();
-            });
-
-          document
-            .getElementById("titlebar-button-close")
-            .addEventListener("click", () => {
-              win.close();
-            });
-        }})(\`${fs
-          .readFileSync(path.join(__dirname, "/electron.css"))
-          .toString()}\`, \`${fs
-          .readFileSync(path.join(__dirname, "/electron.html"))
-          .toString()}\`)`
+        }})()`
       );
     });
 
