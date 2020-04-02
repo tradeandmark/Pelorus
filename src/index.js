@@ -1,12 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
-import App from "./App";
+import App from "./App/";
 import { FluentCustomizations } from "@uifabric/fluent-theme";
 import { Customizer } from "office-ui-fabric-react";
 import * as serviceWorker from "./serviceWorker";
-
-ReactDOM.render(<App />, document.getElementById("root"));
 
 ReactDOM.render(
   <Customizer {...FluentCustomizations}>

@@ -17,7 +17,6 @@ function App() {
           color: "#FFF"
         }
       }}
-      gap={15}
     >
       <Text variant="xxLarge" styles={boldStyle}>
         Hello World!

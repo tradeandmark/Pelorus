@@ -6,16 +6,12 @@ body {
   box-sizing: border-box;
 }
 
-body.theme-light:not(.transparent) {
+body.theme-light {
   background-color: #fff;
 }
 
-body.theme-dark:not(.transparent) {
+body.theme-dark {
   background-color: #222;
-}
-
-body.transparent {
-  background-color: #0000;
 }
 
 /* THE TITLEBAR AND IT'S BASIC CONTENTS (#titlebar, #titlebar-text, #titlebar-drag) */
@@ -26,13 +22,12 @@ body.transparent {
   width: 100%;
   display: grid;
   grid-template-columns: auto 138px;
+  z-index: 1000;
 }
 
 #titlebar-text {
-  position: relative;
   grid-column: 1;
   font-family: "Segoe UI", sans-serif;
-  height: 100%;
   padding-left: 12px;
   font-size: 12px;
   user-select: none;
@@ -125,12 +120,8 @@ body.transparent {
 }
 
 /* Make sure the right icon colors show up when the window is themed */
-.theme-dark #titlebar-buttons .icon-black {
-  display: none;
-}
-
-.theme-light #titlebar-buttons .icon-white {
-  display: none;
+.theme-light #titlebar-buttons .icon {
+  filter: brightness(0);
 }
 
 /* STYLING FOR EACH DIFFERNT ICON TYPE */
@@ -177,18 +168,10 @@ body.transparent {
 
 /* Make sure the close button's icon is the right color when it */
 /* is hovered or clicked and the theme is light or dark */
-.theme-dark #titlebar-button-close:active .icon-white {
-  display: none;
+.theme-dark #titlebar-button-close:active .icon {
+  filter: brightness(0);
 }
 
-.theme-dark #titlebar-button-close:active .icon-black {
-  display: inline;
-}
-
-.theme-light #titlebar-button-close:hover:not(:active) .icon-white {
-  display: inline;
-}
-
-.theme-light #titlebar-button-close:hover:not(:active) .icon-black {
-  display: none;
+.theme-light #titlebar-button-close:hover:not(:active) .icon {
+  filter: brightness(1);
 }
