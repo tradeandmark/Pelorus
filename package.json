@@ -17,28 +17,27 @@
   "license": "MIT",
   "repository": "https://gitlab.com/tradeandmark/Pelorus",
   "dependencies": {
-    "@babel/helper-call-delegate": "^7.8.7",
-    "@types/node": "^13.9.3",
-    "@types/react": "^16.9.25",
-    "@types/react-dom": "^16.9.5",
-    "@uifabric/fluent-theme": "^7.1.42",
-    "electron-context-menu": "^0.16.0",
-    "electron-json-storage": "^4.1.8",
+    "@babel/helper-call-delegate": "^7.11.4",
+    "@types/node": "^14.11.2",
+    "@types/react": "^16.9.49",
+    "@types/react-dom": "^16.9.8",
+    "@uifabric/fluent-theme": "^7.3.13",
+    "electron-context-menu": "^2.3.0",
+    "electron-json-storage": "^4.2.0",
     "electron-unhandled": "^3.0.2",
-    "ewc": "^0.0.1",
-    "nps": "^5.9.12",
-    "office-ui-fabric-react": "^7.105.2",
+    "nps": "^5.10.0",
+    "office-ui-fabric-react": "^7.139.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-scripts": "3.4.1",
-    "typescript": "^3.8.3"
+    "react-scripts": "3.4.3",
+    "typescript": "^4.0.3"
   },
   "devDependencies": {
-    "concurrently": "^5.1.0",
+    "concurrently": "^5.3.0",
     "devtron": "^1.4.0",
-    "electron": "^8.2.0",
-    "electron-builder": "^22.4.1",
-    "wait-on": "^4.0.1"
+    "electron": "^10.1.2",
+    "electron-builder": "^22.8.1",
+    "wait-on": "^5.2.0"
   },
   "build": {
     "directories": {

@@ -1,33 +1,13 @@
-const unhandled = require("electron-unhandled");
-unhandled();
-
 const { app, shell, BrowserWindow, Tray, Menu } = require("electron");
 const path = require("path");
 const fs = require("fs");
-const ewc = require("ewc");
 const storage = require("electron-json-storage");
 const contextMenu = require("electron-context-menu");
 
 const isDev = !app.isPackaged;
 
-function debounce(func, wait, immediate) {
-  var timeout;
-  return function() {
-    var context = this,
-      args = arguments;
-    var later = function() {
-      timeout = null;
-      if (!immediate) func.apply(context, args);
-    };
-    var callNow = immediate && !timeout;
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-    if (callNow) func.apply(context, args);
-  };
-}
-
 contextMenu({
-  showSaveImageAs: true
+  showSaveImageAs: true,
 });
 
 if (!app.requestSingleInstanceLock()) {
@@ -44,8 +24,9 @@ if (!app.requestSingleInstanceLock()) {
       minHeight: 300,
       webPreferences: {
         nodeIntegration: true,
-        preload: path.join(__dirname, "preload.js")
-      }
+        enableRemoteModule: true,
+        preload: path.join(__dirname, "preload.js"),
+      },
     });
 
     app.on("second-instance", () => {
@@ -54,32 +35,6 @@ if (!app.requestSingleInstanceLock()) {
       if (win.isMinimized()) win.restore();
       win.focus();
     });
-
-    // if (process.platform == "win32") {
-    //   const disableAcrylic = debounce(
-    //     () => {
-    //       ewc.setGradient(win, 0xff222222);
-    //     },
-    //     50,
-    //     true
-    //   );
-
-    //   const enableAcrylic = debounce(() => {
-    //     ewc.setAcrylic(win, 0xbb000000);
-    //   }, 50);
-
-    //   enableAcrylic();
-
-    //   win.on("move", () => {
-    //     disableAcrylic();
-    //     enableAcrylic();
-    //   });
-
-    //   win.on("resize", () => {
-    //     disableAcrylic();
-    //     enableAcrylic();
-    //   });
-    // }
 
     const contents = win.webContents;
 
