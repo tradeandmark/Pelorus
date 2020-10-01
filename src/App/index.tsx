@@ -14,14 +14,13 @@ function App() {
           width: "100vw",
           height: "100vh",
           margin: "0 auto",
-          color: "#FFF"
-        }
+          color: "#FFF",
+        },
       }}
     >
       <Text variant="xxLarge" styles={boldStyle}>
         Hello World!
       </Text>
-      {/* <Text variant="large">Welcome to your epic electron + react app!</Text> */}
     </Stack>
   );
 }

@@ -1,9 +1,9 @@
 scripts:
   # Start script; waits for a react development server to start and then launches the electron app
-  default: concurrently -n "r,e" -s "first" -k "nps r.s" "wait-on http://localhost:3000 && nps e.s"
+  default: concurrently -n "r,e" -s "first" -k "nps -s react.start" "wait-on http://localhost:3000 && nps -s electron.start"
 
   # Build script; creates a react optimized production build and then builds the electron app
-  build: nps react.build && nps electron.build
+  build: react-scripts build && electron-builder --dir
 
   electron:
     start: electron .
