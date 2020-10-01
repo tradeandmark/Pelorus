@@ -1,6 +1,6 @@
-const { app, shell, BrowserWindow, Tray, Menu } = require("electron");
+const { app, shell } = require("electron");
+const { BrowserWindow } = require("electron-acrylic-window");
 const path = require("path");
-const fs = require("fs");
 const storage = require("electron-json-storage");
 const contextMenu = require("electron-context-menu");
 
@@ -17,14 +17,23 @@ if (!app.requestSingleInstanceLock()) {
   app.whenReady().then(() => {
     console.log("Launching window");
 
+    let acrylicOptions = {
+      theme: "#222222cc",
+      effect: "acrylic",
+      useCustomWindowRefreshMethod: false,
+      disableOnBlur: false,
+    };
+
     win = new BrowserWindow({
-      frame: false,
-      backgroundColor: "#222",
       minWidth: 600,
       minHeight: 300,
+      frame: false,
+      vibrancy: process.platform == "win32" ? acrylicOptions : "window",
+      darkTheme: true,
       webPreferences: {
         nodeIntegration: true,
         enableRemoteModule: true,
+        scrollBounce: true,
         preload: path.join(__dirname, "preload.js"),
       },
     });
@@ -67,7 +76,6 @@ if (!app.requestSingleInstanceLock()) {
         event.preventDefault();
         shell.openExternal(url);
       } else {
-        event.preventDefault();
         console.log("Loading URL:", url);
       }
     });
@@ -77,7 +85,7 @@ if (!app.requestSingleInstanceLock()) {
       console.log("Loading URL: http://localhost:3000/");
     } else {
       win.loadFile("build/index.html");
-      console.log("Loading URL: build/index.html");
+      console.log("Loading file: build/index.html");
     }
   });
 }
